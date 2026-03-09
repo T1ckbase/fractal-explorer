@@ -1,0 +1,24 @@
+html,
+body {
+  box-sizing: border-box;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+
+canvas {
+  display: block;
+  height: 100dvh;
+  width: 100%;
+}
+
+.debug-overlay {
+  background: rgb(0.1 0.1 0.1 / 0.6);
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0.5rem;
+  white-space: pre-wrap;
+  z-index: 1;
+}
