@@ -1,8 +1,23 @@
-export function getSupportedCanvasExportTypes(): string[] {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1;
-  canvas.height = 1;
+import { FractalExplorerApp } from './app.ts';
 
-  const types = ['image/avif', 'image/webp', 'image/png', 'image/jpeg'];
-  return types.filter((type) => canvas.toDataURL(type).startsWith(`data:${type}`));
+async function main(): Promise<void> {
+  const canvas = document.querySelector('canvas');
+
+  if (!(canvas instanceof HTMLCanvasElement)) {
+    throw new Error('Expected a <canvas> element in index.html.');
+  }
+
+  await FractalExplorerApp.create(canvas);
 }
+
+void main().catch((error: unknown) => {
+  console.error(error);
+
+  const panel = document.createElement('pre');
+  panel.className = 'overlay-panel';
+
+  const message = error instanceof Error ? error.message : 'Unknown startup error.';
+  panel.textContent = `startup error\n  ${message}`;
+
+  document.body.replaceChildren(panel);
+});

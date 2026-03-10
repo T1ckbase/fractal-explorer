@@ -28,6 +28,11 @@ canvas {
   z-index: 1;
 }
 
-.overlay-indent {
-  margin-left: 2ch;
+.overlay-panel :where(p, pre) {
+  margin: 0;
+}
+
+.overlay-row {
+  display: block;
+  white-space: pre;
 }
