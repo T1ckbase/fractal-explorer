@@ -124,7 +124,11 @@ export class FractalRenderer {
     syncCanvasSize(this.canvas, this.device.limits.maxTextureDimension2D);
   }
 
-  render(fractalId: FractalId, camera: CameraSnapshot): RenderDiagnostics {
+  render(
+    fractalId: FractalId,
+    camera: CameraSnapshot,
+    iterationCount: number,
+  ): RenderDiagnostics {
     const fractal = getFractalDefinition(fractalId);
     const aspect = this.canvas.width / this.canvas.height;
 
@@ -135,7 +139,7 @@ export class FractalRenderer {
     this.uniformData[4] = camera.center[0];
     this.uniformData[5] = camera.center[1];
     this.uniformData[6] = fractal.shaderType;
-    this.uniformData[7] = fractal.maxIterations;
+    this.uniformData[7] = iterationCount;
 
     const startedAt = performance.now();
 

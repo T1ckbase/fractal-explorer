@@ -1,5 +1,11 @@
 export type FractalId = 'mandelbrot' | 'burning-ship';
 
+export const iterationRange = {
+  min: 1,
+  max: 8192,
+  step: 1,
+} as const;
+
 const shaderFractalTypes = {
   burningShip: 0,
   mandelbrot: 1,
@@ -13,7 +19,7 @@ export interface FractalDefinition {
   readonly shaderType: ShaderFractalType;
   readonly center: readonly [number, number];
   readonly scale: number;
-  readonly maxIterations: number;
+  readonly defaultIterations: number;
 }
 
 const fractalDefinitions = [
@@ -23,7 +29,7 @@ const fractalDefinitions = [
     shaderType: shaderFractalTypes.mandelbrot,
     center: [-0.5, 0],
     scale: 1.5,
-    maxIterations: 256,
+    defaultIterations: 512,
   },
   {
     id: 'burning-ship',
@@ -31,7 +37,7 @@ const fractalDefinitions = [
     shaderType: shaderFractalTypes.burningShip,
     center: [-0.5, 0.5],
     scale: 1.8,
-    maxIterations: 256,
+    defaultIterations: 512,
   },
 ] as const satisfies readonly FractalDefinition[];
 

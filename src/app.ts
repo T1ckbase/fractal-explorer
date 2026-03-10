@@ -2,6 +2,7 @@ import { FractalCamera } from './camera.ts';
 import {
   defaultFractalId,
   getFractalDefinition,
+  iterationRange,
   type FractalId,
 } from './fractals.ts';
 import { OverlayPanel, type DebugEntry } from './ui/overlay.ts';
@@ -22,6 +23,7 @@ export class FractalExplorerApp {
   private readonly camera = FractalCamera.fromFractal(
     getFractalDefinition(defaultFractalId),
   );
+  private iterationCount = getFractalDefinition(defaultFractalId).defaultIterations;
   private readonly overlay: OverlayPanel;
   private readonly resizeObserver: ResizeObserver;
   private activePointerId: number | null = null;
@@ -33,10 +35,22 @@ export class FractalExplorerApp {
   ) {
     this.overlay = new OverlayPanel({
       fractalId: this.fractalId,
+      iterationCount: this.iterationCount,
       onFractalChange: (fractalId) => {
         this.fractalId = fractalId;
-        this.camera.reset(getFractalDefinition(fractalId));
+        const fractal = getFractalDefinition(fractalId);
+        this.camera.reset(fractal);
+        this.iterationCount = fractal.defaultIterations;
+        this.overlay.setIterationCount(this.iterationCount);
         this.render();
+      },
+      onIterationChange: (iterationCount) => {
+        this.iterationCount = clampIterationCount(iterationCount);
+        this.overlay.setIterationCount(this.iterationCount);
+        this.render();
+      },
+      onResetIterations: () => {
+        this.resetIterations();
       },
     });
 
@@ -60,11 +74,21 @@ export class FractalExplorerApp {
   }
 
   private readonly handleKeydown = (event: KeyboardEvent): void => {
-    if (event.key !== '.' || event.repeat) {
+    if (event.repeat || isEditingControl(event.target)) {
       return;
     }
 
-    this.overlay.toggleVisibility();
+    switch (event.key) {
+      case '.':
+        this.overlay.toggleVisibility();
+        break;
+      case 'r':
+      case 'R':
+        this.resetView();
+        break;
+      default:
+        break;
+    }
   };
 
   private readonly handlePointerDown = (event: PointerEvent): void => {
@@ -125,7 +149,11 @@ export class FractalExplorerApp {
 
   private render(): void {
     const camera = this.camera.snapshot();
-    const diagnostics = this.renderer.render(this.fractalId, camera);
+    const diagnostics = this.renderer.render(
+      this.fractalId,
+      camera,
+      this.iterationCount,
+    );
     this.overlay.setDebugEntries(this.formatDiagnostics(diagnostics, camera));
   }
 
@@ -151,7 +179,7 @@ export class FractalExplorerApp {
         value: `(${camera.center[0].toFixed(6)}, ${displayCenterY.toFixed(6)})`,
       },
       { label: 'scale', value: camera.scale.toExponential(6) },
-      { label: 'iterations', value: String(fractal.maxIterations) },
+      { label: 'iterations', value: String(this.iterationCount) },
       { label: 'format', value: diagnostics.presentationFormat },
       { label: 'adapter', value: diagnostics.adapterSummary },
       {
@@ -166,6 +194,17 @@ export class FractalExplorerApp {
     this.activePointerId = null;
     this.lastPointerPosition = null;
   }
+
+  private resetIterations(): void {
+    this.iterationCount = getFractalDefinition(this.fractalId).defaultIterations;
+    this.overlay.setIterationCount(this.iterationCount);
+    this.render();
+  }
+
+  private resetView(): void {
+    this.camera.reset(getFractalDefinition(this.fractalId));
+    this.render();
+  }
 }
 
 function normalizeWheelDelta(event: WheelEvent, viewportHeight: number): number {
@@ -177,4 +216,19 @@ function normalizeWheelDelta(event: WheelEvent, viewportHeight: number): number 
     default:
       return event.deltaY;
   }
+}
+
+function clampIterationCount(iterationCount: number): number {
+  return Math.min(
+    iterationRange.max,
+    Math.max(iterationRange.min, Math.round(iterationCount)),
+  );
+}
+
+function isEditingControl(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLSelectElement ||
+    target instanceof HTMLTextAreaElement
+  );
 }

@@ -1,5 +1,6 @@
 import {
   fractals,
+  iterationRange,
   isFractalId,
   type FractalId,
 } from '../fractals.ts';
@@ -11,13 +12,17 @@ export interface DebugEntry {
 
 interface OverlayPanelOptions {
   readonly fractalId: FractalId;
+  readonly iterationCount: number;
   readonly onFractalChange: (fractalId: FractalId) => void;
+  readonly onIterationChange: (iterationCount: number) => void;
+  readonly onResetIterations: () => void;
 }
 
 export class OverlayPanel {
   readonly element: HTMLElement;
 
   private readonly fractalSelect: HTMLSelectElement;
+  private readonly iterationInput: HTMLInputElement;
   private readonly debugContainer: HTMLPreElement;
   private visible = true;
 
@@ -46,12 +51,35 @@ export class OverlayPanel {
       options.onFractalChange(value);
     });
 
+    this.iterationInput = document.createElement('input');
+    this.iterationInput.type = 'number';
+    this.iterationInput.min = String(iterationRange.min);
+    this.iterationInput.max = String(iterationRange.max);
+    this.iterationInput.step = String(iterationRange.step);
+    this.iterationInput.inputMode = 'numeric';
+    this.iterationInput.ariaLabel = 'Iteration count';
+    this.iterationInput.value = String(options.iterationCount);
+    this.iterationInput.addEventListener('change', () => {
+      options.onIterationChange(parseIterationCount(this.iterationInput.valueAsNumber));
+    });
+
+    const resetIterationsButton = document.createElement('button');
+    resetIterationsButton.type = 'button';
+    resetIterationsButton.textContent = 'reset';
+    resetIterationsButton.addEventListener('click', () => {
+      options.onResetIterations();
+    });
+
     this.debugContainer = document.createElement('pre');
 
     this.element.append(
-      this.createSection('fractal', [this.createControlRow('type', this.fractalSelect)]),
+      this.createSection('fractal', [
+        this.createControlRow('type', this.fractalSelect),
+        this.createControlRow('iterations', this.iterationInput, resetIterationsButton),
+      ]),
       this.createSection('help', [
         this.createTextRow('.      toggle overlay'),
+        this.createTextRow('r      reset view'),
         this.createTextRow('drag   pan'),
         this.createTextRow('wheel  zoom'),
       ]),
@@ -62,6 +90,10 @@ export class OverlayPanel {
   toggleVisibility(): void {
     this.visible = !this.visible;
     this.element.hidden = !this.visible;
+  }
+
+  setIterationCount(iterationCount: number): void {
+    this.iterationInput.value = String(iterationCount);
   }
 
   setDebugEntries(entries: readonly DebugEntry[]): void {
@@ -90,14 +122,32 @@ export class OverlayPanel {
     return row;
   }
 
-  private createControlRow(label: string, control: HTMLElement): HTMLElement {
+  private createControlRow(label: string, ...controls: readonly HTMLElement[]): HTMLElement {
     const row = document.createElement('label');
     row.className = 'overlay-row';
-    row.append(`${indent()}${label} `, control);
+    row.append(`${indent()}${label} `, ...joinControls(controls));
     return row;
   }
 }
 
 function indent(level = 1): string {
   return '  '.repeat(level);
+}
+
+function parseIterationCount(value: number): number {
+  if (!Number.isFinite(value)) {
+    return iterationRange.min;
+  }
+
+  return Math.min(iterationRange.max, Math.max(iterationRange.min, Math.round(value)));
+}
+
+function joinControls(controls: readonly HTMLElement[]): Node[] {
+  return controls.flatMap((control, index) => {
+    if (index === 0) {
+      return [control];
+    }
+
+    return [document.createTextNode(' '), control];
+  });
 }
