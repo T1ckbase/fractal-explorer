@@ -10,13 +10,18 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "dev": "bun ./index.html",
-    "build": "bun build --target=browser --sourcemap --outdir=dist ./index.html"
+    "build": "bun run clean && bun build --target=browser --sourcemap --outdir=dist ./index.html",
+    "clean": "bun -e \"require('node:fs').rmSync('./dist', { recursive: true, force: true });\""
   },
   "devDependencies": {
+    "@types/bun": "latest",
     "@typescript/native-preview": "^7.0.0-dev.20260309.1",
     "@webgpu/types": "latest",
-    "oxfmt": "^0.36.0",
-    "oxlint": "^1.51.0",
+    "oxfmt": "^0.37.0",
+    "oxlint": "^1.52.0",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@std/webgpu": "npm:@jsr/std__webgpu@^0.224.9"
   }
 }

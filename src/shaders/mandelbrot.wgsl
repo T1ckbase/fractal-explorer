@@ -8,6 +8,8 @@ struct FractalUniforms {
   center : vec2f,
   scale : f32,
   maxIterations : f32,
+  fractalKind : f32,
+  _padding : f32,
 }
 
 @group(0) @binding(0) var<uniform> uniforms : FractalUniforms;
@@ -50,7 +52,10 @@ fn palette(t : f32) -> vec3f {
 fn fragmentMain(input : VertexOutput) -> @location(0) vec4f {
   let aspect = uniforms.resolution.x / uniforms.resolution.y;
   let view = vec2f((input.uv.x - 0.5) * aspect, input.uv.y - 0.5) * uniforms.scale;
-  let c = uniforms.center + view;
+  var c = uniforms.center + view;
+  if (uniforms.fractalKind >= 0.5) {
+    c.y = uniforms.center.y - view.y;
+  }
 
   var z = vec2f(0.0, 0.0);
   var iteration = 0.0;
@@ -60,8 +65,13 @@ fn fragmentMain(input : VertexOutput) -> @location(0) vec4f {
       break;
     }
 
-    let x = z.x * z.x - z.y * z.y + c.x;
-    let y = 2.0 * z.x * z.y + c.y;
+    var sample = z;
+    if (uniforms.fractalKind >= 0.5) {
+      sample = abs(z);
+    }
+
+    let x = sample.x * sample.x - sample.y * sample.y + c.x;
+    let y = 2.0 * sample.x * sample.y + c.y;
     z = vec2f(x, y);
     iteration += 1.0;
   }

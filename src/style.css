@@ -4,6 +4,7 @@ body {
   height: 100dvh;
   margin: 0;
   padding: 0;
+  line-height: 1.4;
 }
 
 canvas {
@@ -12,13 +13,29 @@ canvas {
   width: 100%;
 }
 
-.debug-overlay {
-  background: rgb(0.1 0.1 0.1 / 0.6);
-  position: fixed;
-  top: 0;
+.overlay-panel {
+  font-family: monospace;
   left: 0;
   margin: 0;
   padding: 0.5rem;
-  white-space: pre-wrap;
+  position: fixed;
+  top: 0;
+  background: rgb(0.1 0.1 0.1 / 0.6);
   z-index: 1;
+}
+
+.overlay-panel :is(input, select, button) {
+  font: inherit;
+}
+
+.overlay-form {
+  margin: 0;
+}
+
+.overlay-indent {
+  margin-left: 2ch;
+}
+
+.overlay-debug {
+  margin: 0;
 }

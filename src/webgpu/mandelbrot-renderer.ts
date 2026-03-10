@@ -1,7 +1,7 @@
 import shaderSource from '../shaders/mandelbrot.wgsl' with { type: 'text' };
-import type { FractalView } from '../fractal/camera';
+import type { FractalRenderState } from '../fractal/state';
 
-const UNIFORM_BUFFER_SIZE = 24;
+const UNIFORM_BUFFER_SIZE = 32;
 
 type RendererOptions = {
   canvas: HTMLCanvasElement;
@@ -12,7 +12,7 @@ export class MandelbrotRenderer {
   readonly device: GPUDevice;
   readonly context: GPUCanvasContext;
 
-  private readonly uniformData = new Float32Array(6);
+  private readonly uniformData = new Float32Array(8);
   private readonly uniformBuffer: GPUBuffer;
   private readonly bindGroup: GPUBindGroup;
   private readonly pipeline: GPURenderPipeline;
@@ -114,13 +114,15 @@ export class MandelbrotRenderer {
     });
   }
 
-  render(view: FractalView): void {
+  render(view: FractalRenderState): void {
     this.uniformData[0] = this.canvas.width;
     this.uniformData[1] = this.canvas.height;
     this.uniformData[2] = view.centerX;
     this.uniformData[3] = view.centerY;
     this.uniformData[4] = view.scale;
     this.uniformData[5] = view.maxIterations;
+    this.uniformData[6] = view.fractalKind === 'mandelbrot' ? 0 : 1;
+    this.uniformData[7] = 0;
 
     this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformData);
 
