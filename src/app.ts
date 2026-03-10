@@ -5,6 +5,10 @@ import {
   iterationRange,
   type FractalId,
 } from './fractals.ts';
+import {
+  defaultPaletteId,
+  type PaletteId,
+} from './palettes.ts';
 import { OverlayPanel, type DebugEntry } from './ui/overlay.ts';
 import {
   FractalRenderer,
@@ -24,6 +28,7 @@ export class FractalExplorerApp {
     getFractalDefinition(defaultFractalId),
   );
   private iterationCount = getFractalDefinition(defaultFractalId).defaultIterations;
+  private paletteId: PaletteId = defaultPaletteId;
   private readonly overlay: OverlayPanel;
   private readonly resizeObserver: ResizeObserver;
   private activePointerId: number | null = null;
@@ -36,12 +41,17 @@ export class FractalExplorerApp {
     this.overlay = new OverlayPanel({
       fractalId: this.fractalId,
       iterationCount: this.iterationCount,
+      paletteId: this.paletteId,
       onFractalChange: (fractalId) => {
         this.fractalId = fractalId;
         const fractal = getFractalDefinition(fractalId);
         this.camera.reset(fractal);
         this.iterationCount = fractal.defaultIterations;
         this.overlay.setIterationCount(this.iterationCount);
+        this.render();
+      },
+      onPaletteChange: (paletteId) => {
+        this.paletteId = paletteId;
         this.render();
       },
       onIterationChange: (iterationCount) => {
@@ -153,6 +163,7 @@ export class FractalExplorerApp {
       this.fractalId,
       camera,
       this.iterationCount,
+      this.paletteId,
     );
     this.overlay.setDebugEntries(this.formatDiagnostics(diagnostics, camera));
   }
@@ -166,6 +177,7 @@ export class FractalExplorerApp {
 
     return [
       { label: 'fractal', value: fractal.label },
+      { label: 'palette', value: this.paletteId },
       {
         label: 'resolution',
         value: `${diagnostics.canvasWidth}x${diagnostics.canvasHeight}`,

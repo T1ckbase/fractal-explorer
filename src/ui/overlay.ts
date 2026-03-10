@@ -4,6 +4,7 @@ import {
   isFractalId,
   type FractalId,
 } from '../fractals.ts';
+import { isPaletteId, palettes, type PaletteId } from '../palettes.ts';
 
 export interface DebugEntry {
   readonly label: string;
@@ -13,7 +14,9 @@ export interface DebugEntry {
 interface OverlayPanelOptions {
   readonly fractalId: FractalId;
   readonly iterationCount: number;
+  readonly paletteId: PaletteId;
   readonly onFractalChange: (fractalId: FractalId) => void;
+  readonly onPaletteChange: (paletteId: PaletteId) => void;
   readonly onIterationChange: (iterationCount: number) => void;
   readonly onResetIterations: () => void;
 }
@@ -22,6 +25,7 @@ export class OverlayPanel {
   readonly element: HTMLElement;
 
   private readonly fractalSelect: HTMLSelectElement;
+  private readonly paletteSelect: HTMLSelectElement;
   private readonly iterationInput: HTMLInputElement;
   private readonly debugContainer: HTMLPreElement;
   private visible = true;
@@ -51,6 +55,27 @@ export class OverlayPanel {
       options.onFractalChange(value);
     });
 
+    this.paletteSelect = document.createElement('select');
+    this.paletteSelect.ariaLabel = 'Palette';
+
+    for (const palette of palettes) {
+      const option = document.createElement('option');
+      option.value = palette;
+      option.textContent = palette;
+      this.paletteSelect.append(option);
+    }
+
+    this.paletteSelect.value = options.paletteId;
+    this.paletteSelect.addEventListener('change', () => {
+      const value = this.paletteSelect.value;
+
+      if (!isPaletteId(value)) {
+        return;
+      }
+
+      options.onPaletteChange(value);
+    });
+
     this.iterationInput = document.createElement('input');
     this.iterationInput.type = 'number';
     this.iterationInput.min = String(iterationRange.min);
@@ -75,6 +100,7 @@ export class OverlayPanel {
     this.element.append(
       this.createSection('fractal', [
         this.createControlRow('type', this.fractalSelect),
+        this.createControlRow('palette', this.paletteSelect),
         this.createControlRow('iterations', this.iterationInput, resetIterationsButton),
       ]),
       this.createSection('help', [
