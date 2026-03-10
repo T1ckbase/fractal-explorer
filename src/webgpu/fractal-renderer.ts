@@ -1,4 +1,4 @@
-import shaderSource from '../shaders/mandelbrot.wgsl' with { type: 'text' };
+import shaderSource from '../shaders/fractal.wgsl' with { type: 'text' };
 import type { FractalRenderState } from '../fractal/state';
 
 const UNIFORM_BUFFER_SIZE = 32;
@@ -7,12 +7,14 @@ type RendererOptions = {
   canvas: HTMLCanvasElement;
 };
 
-export class MandelbrotRenderer {
+export class FractalRenderer {
   readonly canvas: HTMLCanvasElement;
   readonly device: GPUDevice;
   readonly context: GPUCanvasContext;
 
-  private readonly uniformData = new Float32Array(8);
+  private readonly uniformBytes = new ArrayBuffer(32);
+  private readonly uniformFloats = new Float32Array(this.uniformBytes);
+  private readonly uniformInts = new Uint32Array(this.uniformBytes);
   private readonly uniformBuffer: GPUBuffer;
   private readonly bindGroup: GPUBindGroup;
   private readonly pipeline: GPURenderPipeline;
@@ -32,7 +34,7 @@ export class MandelbrotRenderer {
 
     const shaderModule = this.device.createShaderModule({
       code: shaderSource,
-      label: 'mandelbrot-shader',
+      label: 'fractal-shader',
     });
 
     this.uniformBuffer = this.device.createBuffer({
@@ -58,7 +60,7 @@ export class MandelbrotRenderer {
     });
 
     this.pipeline = this.device.createRenderPipeline({
-      label: 'mandelbrot-pipeline',
+      label: 'fractal-pipeline',
       layout: pipelineLayout,
       vertex: {
         module: shaderModule,
@@ -86,7 +88,7 @@ export class MandelbrotRenderer {
     });
   }
 
-  static async create(options: RendererOptions): Promise<MandelbrotRenderer> {
+  static async create(options: RendererOptions): Promise<FractalRenderer> {
     if (!('gpu' in navigator)) {
       throw new Error('WebGPU is not available in this browser.');
     }
@@ -103,7 +105,7 @@ export class MandelbrotRenderer {
       throw new Error('Failed to create a WebGPU canvas context.');
     }
 
-    return new MandelbrotRenderer(options, device, context);
+    return new FractalRenderer(options, device, context);
   }
 
   resize(): void {
@@ -115,23 +117,23 @@ export class MandelbrotRenderer {
   }
 
   render(view: FractalRenderState): void {
-    this.uniformData[0] = this.canvas.width;
-    this.uniformData[1] = this.canvas.height;
-    this.uniformData[2] = view.centerX;
-    this.uniformData[3] = view.centerY;
-    this.uniformData[4] = view.scale;
-    this.uniformData[5] = view.maxIterations;
-    this.uniformData[6] = view.fractalKind === 'mandelbrot' ? 0 : 1;
-    this.uniformData[7] = 0;
+    this.uniformFloats[0] = this.canvas.width;
+    this.uniformFloats[1] = this.canvas.height;
+    this.uniformFloats[2] = view.centerX;
+    this.uniformFloats[3] = view.centerY;
+    this.uniformFloats[4] = view.scale;
+    this.uniformFloats[5] = view.maxIterations;
+    this.uniformInts[6] = view.fractalKind === 'burning-ship' ? 0 : 1;
+    this.uniformInts[7] = 0;
 
-    this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformData);
+    this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBytes);
 
     const commandEncoder = this.device.createCommandEncoder({
-      label: 'mandelbrot-command-encoder',
+      label: 'fractal-command-encoder',
     });
 
     const renderPass = commandEncoder.beginRenderPass({
-      label: 'mandelbrot-render-pass',
+      label: 'fractal-render-pass',
       colorAttachments: [
         {
           view: this.context.getCurrentTexture().createView(),

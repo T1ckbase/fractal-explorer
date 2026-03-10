@@ -35,16 +35,18 @@ export function attachCameraControls({ canvas, camera, onChange }: ControlsOptio
       return;
     }
 
-    const deltaX = event.clientX - lastPointerX;
-    const deltaY = event.clientY - lastPointerY;
-    lastPointerX = event.clientX;
-    lastPointerY = event.clientY;
+    const nextPointerX = event.clientX;
+    const nextPointerY = event.clientY;
+    const deltaX = nextPointerX - lastPointerX;
+    const deltaY = nextPointerY - lastPointerY;
 
     if (deltaX === 0 && deltaY === 0) {
       return;
     }
 
-    camera.panByPixels(canvas, deltaX, deltaY);
+    camera.panBetweenScreenPoints(canvas, lastPointerX, lastPointerY, nextPointerX, nextPointerY);
+    lastPointerX = nextPointerX;
+    lastPointerY = nextPointerY;
     onChange();
   };
 

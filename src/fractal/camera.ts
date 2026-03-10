@@ -11,7 +11,6 @@ export class FractalCamera {
   private centerX: number;
   private centerY: number;
   private scale: number;
-  private yAxisScale = 1;
 
   constructor(initialView: FractalView) {
     this.centerX = initialView.centerX;
@@ -33,18 +32,20 @@ export class FractalCamera {
     this.scale = clamp(view.scale, MIN_SCALE, MAX_SCALE);
   }
 
-  setVerticalMirror(mirrored: boolean): void {
-    this.yAxisScale = mirrored ? -1 : 1;
-  }
-
-  panByPixels(canvas: HTMLCanvasElement, deltaX: number, deltaY: number): boolean {
+  panBetweenScreenPoints(
+    canvas: HTMLCanvasElement,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+  ): boolean {
     const rect = canvas.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) {
       return false;
     }
 
-    const start = this.getWorldPoint(rect, rect.left, rect.top);
-    const end = this.getWorldPoint(rect, rect.left + deltaX, rect.top + deltaY);
+    const start = this.getWorldPoint(rect, startX, startY);
+    const end = this.getWorldPoint(rect, endX, endY);
     this.centerX += start.x - end.x;
     this.centerY += start.y - end.y;
     return true;
@@ -66,7 +67,7 @@ export class FractalCamera {
 
     this.scale = nextScale;
     this.centerX = world.x - offset.x * this.scale;
-    this.centerY = world.y - offset.y * this.scale * this.yAxisScale;
+    this.centerY = world.y - offset.y * this.scale;
     return true;
   }
 
@@ -75,7 +76,7 @@ export class FractalCamera {
 
     return {
       x: this.centerX + offset.x * this.scale,
-      y: this.centerY + offset.y * this.scale * this.yAxisScale,
+      y: this.centerY + offset.y * this.scale,
     };
   }
 

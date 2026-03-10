@@ -4,7 +4,7 @@ import { buildFractalRenderState, clampIterations, getDefaultFractalSettings, ge
 import { downloadCanvasImage, getSupportedCanvasExportTypes } from './export/canvas-export';
 import { OverlayPanel } from './overlay/panel';
 import { configureCanvasSize } from './webgpu/canvas';
-import { MandelbrotRenderer } from './webgpu/mandelbrot-renderer';
+import { FractalRenderer } from './webgpu/fractal-renderer';
 
 async function main(): Promise<void> {
   const canvas = document.querySelector('canvas');
@@ -12,7 +12,7 @@ async function main(): Promise<void> {
     throw new Error('Expected a canvas element in the document.');
   }
 
-  const renderer = await MandelbrotRenderer.create({ canvas });
+  const renderer = await FractalRenderer.create({ canvas });
   const settings = getDefaultFractalSettings();
   const camera = new FractalCamera(getFractalPreset(settings.fractalKind));
   const overlay = new OverlayPanel({
@@ -20,7 +20,6 @@ async function main(): Promise<void> {
     exportTypes: getSupportedCanvasExportTypes(),
     onFractalKindChange: (fractalKind) => {
       settings.fractalKind = fractalKind;
-      camera.setVerticalMirror(fractalKind === 'burning-ship');
       camera.setView(getFractalPreset(fractalKind));
       requestRender();
     },
@@ -38,7 +37,6 @@ async function main(): Promise<void> {
       await downloadCanvasImage(canvas, type, buildExportFileStem(renderState, settings.iterationMode));
     },
   });
-  camera.setVerticalMirror(settings.fractalKind === 'burning-ship');
   let frameHandle = 0;
 
   const renderFrame = (): void => {

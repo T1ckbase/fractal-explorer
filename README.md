@@ -1,1 +1,3 @@
-# Vibe-coded Fractal Explorer
+# Fractal Explorer
+
+GPU-accelerated fractal explorer
