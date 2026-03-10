@@ -5,15 +5,15 @@
     "": {
       "name": "fractal-explorer",
       "dependencies": {
-        "@std/webgpu": "npm:@jsr/std__webgpu@latest",
+        "@std/webgpu": "npm:@jsr/std__webgpu@^0.224.9",
       },
       "devDependencies": {
         "@types/bun": "latest",
-        "@typescript/native-preview": "latest",
+        "@typescript/native-preview": "^7.0.0-dev.20260309.1",
         "@webgpu/types": "latest",
-        "oxfmt": "latest",
-        "oxlint": "latest",
-        "typescript": "latest",
+        "oxfmt": "^0.37.0",
+        "oxlint": "^1.52.0",
+        "typescript": "^5.9.3",
       },
     },
   },

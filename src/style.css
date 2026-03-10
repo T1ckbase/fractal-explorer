@@ -13,6 +13,10 @@ canvas {
   width: 100%;
 }
 
+:where(select, button, input, textarea) {
+  font: inherit;
+}
+
 .overlay-panel {
   font-family: monospace;
   left: 0;
@@ -24,18 +28,6 @@ canvas {
   z-index: 1;
 }
 
-.overlay-panel :is(input, select, button) {
-  font: inherit;
-}
-
-.overlay-form {
-  margin: 0;
-}
-
 .overlay-indent {
   margin-left: 2ch;
-}
-
-.overlay-debug {
-  margin: 0;
 }
