@@ -1,3 +1,4 @@
+import type { CameraSnapshot } from '../camera.ts';
 import {
   getFractalDefinition,
   type FractalId,
@@ -104,7 +105,6 @@ export class FractalRenderer {
     );
   }
 
-  private fractalId: FractalId = 'mandelbrot';
   private readonly uniformData = new Float32Array(uniformFloatCount);
   private lastSubmitDurationMs = 0;
   private renderCount = 0;
@@ -120,24 +120,20 @@ export class FractalRenderer {
     private readonly adapterSummary: string,
   ) {}
 
-  setFractal(fractalId: FractalId): void {
-    this.fractalId = fractalId;
-  }
-
   resize(): void {
     syncCanvasSize(this.canvas, this.device.limits.maxTextureDimension2D);
   }
 
-  render(): RenderDiagnostics {
-    const fractal = getFractalDefinition(this.fractalId);
+  render(fractalId: FractalId, camera: CameraSnapshot): RenderDiagnostics {
+    const fractal = getFractalDefinition(fractalId);
     const aspect = this.canvas.width / this.canvas.height;
 
     this.uniformData[0] = this.canvas.width;
     this.uniformData[1] = this.canvas.height;
-    this.uniformData[2] = fractal.scale;
+    this.uniformData[2] = camera.scale;
     this.uniformData[3] = aspect;
-    this.uniformData[4] = fractal.center[0];
-    this.uniformData[5] = fractal.center[1];
+    this.uniformData[4] = camera.center[0];
+    this.uniformData[5] = camera.center[1];
     this.uniformData[6] = fractal.shaderType;
     this.uniformData[7] = fractal.maxIterations;
 
@@ -172,7 +168,7 @@ export class FractalRenderer {
     this.renderCount += 1;
 
     return {
-      fractalId: this.fractalId,
+      fractalId,
       canvasWidth: this.canvas.width,
       canvasHeight: this.canvas.height,
       devicePixelRatio: window.devicePixelRatio || 1,

@@ -50,7 +50,11 @@ export class OverlayPanel {
 
     this.element.append(
       this.createSection('fractal', [this.createControlRow('type', this.fractalSelect)]),
-      this.createSection('help', [this.createTextRow('. toggle overlay')]),
+      this.createSection('help', [
+        this.createTextRow('.      toggle overlay'),
+        this.createTextRow('drag   pan'),
+        this.createTextRow('wheel  zoom'),
+      ]),
       this.createSection('debug', [this.debugContainer]),
     );
   }

@@ -10,6 +10,7 @@ body {
 canvas {
   display: block;
   height: 100dvh;
+  touch-action: none;
   width: 100%;
 }
 
