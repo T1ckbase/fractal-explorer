@@ -48,7 +48,7 @@ fn iterate_mandelbrot(c: vec2f, max_iterations: u32) -> EscapeResult {
   return EscapeResult(iteration, magnitude_squared);
 }
 
-fn iterate_burning_ship(c: vec2f, max_iterations: u32) -> EscapeResult {
+fn iterate_burning_ship_reflected(c: vec2f, max_iterations: u32) -> EscapeResult {
   var z = vec2f(0.0, 0.0);
   var iteration = 0u;
   var magnitude_squared = 0.0;
@@ -60,7 +60,7 @@ fn iterate_burning_ship(c: vec2f, max_iterations: u32) -> EscapeResult {
 
     let folded = abs(z);
     let x = folded.x * folded.x - folded.y * folded.y + c.x;
-    let y = 2.0 * folded.x * folded.y + c.y;
+    let y = -2.0 * folded.x * folded.y + c.y;
     z = vec2f(x, y);
     magnitude_squared = dot(z, z);
 
@@ -77,7 +77,7 @@ fn iterate_burning_ship(c: vec2f, max_iterations: u32) -> EscapeResult {
 fn sample_fractal(c: vec2f, max_iterations: u32, fractal_type: u32) -> EscapeResult {
   switch fractal_type {
     case 0u: {
-      return iterate_burning_ship(c, max_iterations);
+      return iterate_burning_ship_reflected(c, max_iterations);
     }
     default: {
       return iterate_mandelbrot(c, max_iterations);
@@ -271,10 +271,6 @@ fn fs_main(@builtin(position) position: vec4f) -> @location(0) vec4f {
   uv.y = -uv.y;
 
   var c = center + vec2f(uv.x * aspect * scale, uv.y * scale);
-
-  if (fractal_type == 0u) {
-    c.y = -c.y;
-  }
 
   let result = sample_fractal(c, max_iterations, fractal_type);
   return colorize(result, max_iterations, palette_type);

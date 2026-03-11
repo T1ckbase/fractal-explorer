@@ -173,7 +173,6 @@ export class FractalExplorerApp {
     camera: ReturnType<FractalCamera['snapshot']>,
   ): DebugEntry[] {
     const fractal = getFractalDefinition(diagnostics.fractalId);
-    const displayCenterY = fractal.id === 'burning-ship' ? -camera.center[1] : camera.center[1];
 
     return [
       { label: 'fractal', value: fractal.label },
@@ -188,7 +187,7 @@ export class FractalExplorerApp {
       },
       {
         label: 'center',
-        value: `(${camera.center[0].toFixed(6)}, ${displayCenterY.toFixed(6)})`,
+        value: `(${camera.center[0].toFixed(6)}, ${camera.center[1].toFixed(6)})`,
       },
       { label: 'scale', value: camera.scale.toExponential(6) },
       { label: 'iterations', value: String(this.iterationCount) },

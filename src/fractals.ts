@@ -1,4 +1,4 @@
-export type FractalId = 'mandelbrot' | 'burning-ship';
+export type FractalId = 'mandelbrot' | 'burning-ship-reflected';
 
 export const iterationRange = {
   min: 1,
@@ -32,8 +32,8 @@ const fractalDefinitions = [
     defaultIterations: 512,
   },
   {
-    id: 'burning-ship',
-    label: 'Burning Ship',
+    id: 'burning-ship-reflected',
+    label: 'Burning Ship (Reflected)',
     shaderType: shaderFractalTypes.burningShip,
     center: [-0.5, 0.5],
     scale: 1.8,
