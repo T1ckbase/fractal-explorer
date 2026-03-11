@@ -24,7 +24,9 @@ export const fractals = [
 export type FractalDefinition = (typeof fractals)[number];
 export type FractalId = FractalDefinition['id'];
 
-export const defaultFractalId: FractalId = fractals[0].id;
+const defaultFractal = fractals[0];
+
+export const defaultFractalId: FractalId = defaultFractal.id;
 
 export function getFractalDefinition(fractalId: FractalId): FractalDefinition {
   const fractal = fractals.find((entry) => entry.id === fractalId);
@@ -34,16 +36,6 @@ export function getFractalDefinition(fractalId: FractalId): FractalDefinition {
   }
 
   return fractal;
-}
-
-export function getFractalIndex(fractalId: FractalId): number {
-  const fractalIndex = fractals.findIndex((entry) => entry.id === fractalId);
-
-  if (fractalIndex < 0) {
-    throw new Error(`Unknown fractal: ${fractalId}`);
-  }
-
-  return fractalIndex;
 }
 
 export function isFractalId(value: string): value is FractalId {

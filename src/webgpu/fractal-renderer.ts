@@ -1,8 +1,5 @@
 import type { CameraSnapshot } from '../camera.ts';
-import {
-  getFractalIndex,
-  type FractalId,
-} from '../fractals.ts';
+import { fractals, type FractalId } from '../fractals.ts';
 import { getPaletteIndex, type PaletteId } from '../palettes.ts';
 import shaderSource from '../shaders/fractal.wgsl' with { type: 'text' }; // NOTE: Bun HMR may not rebundle this asset correctly; restart server if changes don't apply.
 
@@ -132,8 +129,12 @@ export class FractalRenderer {
     paletteIterationCount: number,
     paletteId: PaletteId,
   ): RenderDiagnostics {
-    const fractalIndex = getFractalIndex(fractalId);
+    const fractalIndex = fractals.findIndex((fractal) => fractal.id === fractalId);
     const aspect = this.canvas.width / this.canvas.height;
+
+    if (fractalIndex < 0) {
+      throw new Error(`Unknown fractal: ${fractalId}`);
+    }
 
     this.uniformData[0] = this.canvas.width;
     this.uniformData[1] = this.canvas.height;

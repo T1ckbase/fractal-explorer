@@ -47,8 +47,7 @@ export class FractalExplorerApp {
       paletteId: this.paletteId,
       onFractalChange: (fractalId) => {
         this.fractalId = fractalId;
-        const fractal = getFractalDefinition(fractalId);
-        this.camera.reset(fractal);
+        this.camera.reset(getFractalDefinition(fractalId));
         this.render();
       },
       onPaletteChange: (paletteId) => {
