@@ -12,7 +12,7 @@ export interface RenderDiagnostics {
   readonly devicePixelRatio: number;
   readonly presentationFormat: GPUTextureFormat;
   readonly adapterSummary: string;
-  readonly lastSubmitDurationMs: number;
+  readonly lastRenderDurationMs: number | null;
   readonly renderCount: number;
 }
 
@@ -28,7 +28,13 @@ export class FractalRenderer {
       throw new Error('Unable to acquire a WebGPU adapter.');
     }
 
-    const device = await adapter.requestDevice();
+    const requiredFeatures: GPUFeatureName[] = [];
+
+    if (adapter.features.has('timestamp-query')) {
+      requiredFeatures.push('timestamp-query');
+    }
+
+    const device = await adapter.requestDevice({ requiredFeatures });
     const context = canvas.getContext('webgpu');
 
     if (!context) {
@@ -100,11 +106,12 @@ export class FractalRenderer {
       uniformBuffer,
       bindGroup,
       adapterSummary || 'adapter details unavailable',
+      TimestampQueryState.create(device),
     );
   }
 
   private readonly uniformData = new Float32Array(uniformFloatCount);
-  private lastSubmitDurationMs = 0;
+  private lastRenderDurationMs: number | null = null;
   private renderCount = 0;
 
   private constructor(
@@ -116,6 +123,7 @@ export class FractalRenderer {
     private readonly uniformBuffer: GPUBuffer,
     private readonly bindGroup: GPUBindGroup,
     private readonly adapterSummary: string,
+    private readonly timestampQueryState: TimestampQueryState | null,
   ) {}
 
   resize(): void {
@@ -149,15 +157,13 @@ export class FractalRenderer {
     this.uniformData[10] = 0;
     this.uniformData[11] = 0;
 
-    const startedAt = performance.now();
-
     this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformData);
 
     const encoder = this.device.createCommandEncoder({
       label: 'Fractal command encoder',
     });
 
-    const renderPass = encoder.beginRenderPass({
+    const renderPassDescriptor: GPURenderPassDescriptor = {
       label: 'Fractal render pass',
       colorAttachments: [
         {
@@ -167,16 +173,23 @@ export class FractalRenderer {
           storeOp: 'store',
         },
       ],
-    });
+    };
+
+    this.timestampQueryState?.writePassTimestamps(renderPassDescriptor);
+
+    const renderPass = encoder.beginRenderPass(renderPassDescriptor);
 
     renderPass.setPipeline(this.pipeline);
     renderPass.setBindGroup(0, this.bindGroup);
     renderPass.draw(3);
     renderPass.end();
 
-    this.device.queue.submit([encoder.finish()]);
+    this.timestampQueryState?.resolve(encoder);
 
-    this.lastSubmitDurationMs = performance.now() - startedAt;
+    this.device.queue.submit([encoder.finish()]);
+    this.timestampQueryState?.readLatest((elapsedMs) => {
+      this.lastRenderDurationMs = elapsedMs;
+    });
     this.renderCount += 1;
 
     return {
@@ -186,10 +199,146 @@ export class FractalRenderer {
       devicePixelRatio: window.devicePixelRatio || 1,
       presentationFormat: this.presentationFormat,
       adapterSummary: this.adapterSummary,
-      lastSubmitDurationMs: this.lastSubmitDurationMs,
+      lastRenderDurationMs: this.lastRenderDurationMs,
       renderCount: this.renderCount,
     };
   }
+}
+
+class TimestampQueryState {
+  static create(device: GPUDevice): TimestampQueryState | null {
+    if (!device.features.has('timestamp-query')) {
+      return null;
+    }
+
+    return new TimestampQueryState(device);
+  }
+
+  private static readonly queryCount = 2;
+  private static readonly bytesPerTimestamp = BigUint64Array.BYTES_PER_ELEMENT;
+  private static readonly readbackSlotCount = 2;
+
+  private readonly querySet: GPUQuerySet;
+  private readonly resolveBuffer: GPUBuffer;
+  private readonly readbackSlots: TimestampReadbackSlot[];
+  private nextReadbackSlotIndex = 0;
+  private lastSubmittedSlotIndex: number | null = null;
+
+  private constructor(device: GPUDevice) {
+    const resultBufferSize =
+      TimestampQueryState.queryCount * TimestampQueryState.bytesPerTimestamp;
+
+    this.querySet = device.createQuerySet({
+      type: 'timestamp',
+      count: TimestampQueryState.queryCount,
+    });
+    this.resolveBuffer = device.createBuffer({
+      label: 'Fractal timestamp resolve buffer',
+      size: resultBufferSize,
+      usage: GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC,
+    });
+    this.readbackSlots = Array.from(
+      { length: TimestampQueryState.readbackSlotCount },
+      (_, index) => ({
+        buffer: device.createBuffer({
+          label: `Fractal timestamp readback buffer ${index + 1}`,
+          size: resultBufferSize,
+          usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
+        }),
+        busy: false,
+        readPending: false,
+      }),
+    );
+  }
+
+  writePassTimestamps(passDescriptor: GPURenderPassDescriptor): void {
+    passDescriptor.timestampWrites = {
+      querySet: this.querySet,
+      beginningOfPassWriteIndex: 0,
+      endOfPassWriteIndex: 1,
+    };
+  }
+
+  resolve(encoder: GPUCommandEncoder): void {
+    const slot = this.getReadbackSlot(this.nextReadbackSlotIndex);
+
+    if (slot.busy || slot.buffer.mapState !== 'unmapped') {
+      return;
+    }
+
+    const bufferSize = this.resolveBuffer.size;
+
+    encoder.resolveQuerySet(
+      this.querySet,
+      0,
+      TimestampQueryState.queryCount,
+      this.resolveBuffer,
+      0,
+    );
+    encoder.copyBufferToBuffer(this.resolveBuffer, 0, slot.buffer, 0, bufferSize);
+
+    slot.busy = true;
+    this.lastSubmittedSlotIndex = this.nextReadbackSlotIndex;
+    this.nextReadbackSlotIndex =
+      (this.nextReadbackSlotIndex + 1) % this.readbackSlots.length;
+  }
+
+  readLatest(onResult: (elapsedMs: number) => void): void {
+    if (this.lastSubmittedSlotIndex === null) {
+      return;
+    }
+
+    const slot = this.getReadbackSlot(this.lastSubmittedSlotIndex);
+    this.lastSubmittedSlotIndex = null;
+
+    if (slot.readPending || slot.buffer.mapState !== 'unmapped') {
+      return;
+    }
+
+    slot.readPending = true;
+
+    void slot.buffer
+      .mapAsync(GPUMapMode.READ)
+      .then(() => {
+        const range = slot.buffer.getMappedRange();
+        const [beginTimestamp, endTimestamp] = new BigUint64Array(range);
+
+        if (beginTimestamp === undefined || endTimestamp === undefined) {
+          return;
+        }
+
+        const elapsedNs = endTimestamp - beginTimestamp;
+
+        if (elapsedNs >= 0n) {
+          onResult(Number(elapsedNs) * 1e-6);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (slot.buffer.mapState === 'mapped') {
+          slot.buffer.unmap();
+        }
+
+        slot.busy = false;
+        slot.readPending = false;
+      });
+  }
+
+  private getReadbackSlot(index: number): TimestampReadbackSlot {
+    const slot = this.readbackSlots[index];
+
+    if (!slot) {
+      throw new Error(`Missing timestamp readback slot ${index}`);
+    }
+
+    return slot;
+  }
+}
+
+interface TimestampReadbackSlot {
+  readonly buffer: GPUBuffer;
+  busy: boolean;
+  readPending: boolean;
 }
 
 function syncCanvasSize(

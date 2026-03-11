@@ -204,8 +204,11 @@ export class FractalExplorerApp {
       { label: 'format', value: diagnostics.presentationFormat },
       { label: 'adapter', value: diagnostics.adapterSummary },
       {
-        label: 'submit',
-        value: `${diagnostics.lastSubmitDurationMs.toFixed(2)} ms`,
+        label: 'render',
+        value:
+          diagnostics.lastRenderDurationMs === null
+            ? '--'
+            : `${diagnostics.lastRenderDurationMs.toFixed(2)} ms`,
       },
       { label: 'renders', value: String(diagnostics.renderCount) },
     ];
