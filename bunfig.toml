@@ -1,2 +1,5 @@
 [install.scopes]
 "@jsr" = "https://npm.jsr.io"
+
+[serve.static]
+plugins = ["./bun-plugin-text-asset.ts"]

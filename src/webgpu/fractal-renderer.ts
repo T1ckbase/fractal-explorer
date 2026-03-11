@@ -1,7 +1,7 @@
 import type { CameraSnapshot } from '../camera.ts';
 import { fractals, type FractalId } from '../fractals.ts';
 import { getPaletteIndex, type PaletteId } from '../palettes.ts';
-import shaderSource from '../shaders/fractal.wgsl' with { type: 'text' }; // NOTE: Bun HMR may not rebundle this asset correctly; restart server if changes don't apply.
+import shaderSource from '../shaders/fractal.wgsl' with { type: 'text' }; // Handled by bun-plugin-text-asset
 
 const uniformFloatCount = 12;
 
