@@ -1,4 +1,16 @@
-export const palettes = ['blue-gold', 'fire', 'grayscale', 'viridis'] as const;
+export const palettes = [
+  'turbo',
+  'grayscale',
+  'inferno',
+  'viridis',
+  'magma',
+  'plasma',
+  'blue-gold',
+  'emerald',
+  'fire',
+  'cubehelix',
+  'test',
+] as const;
 
 export type PaletteId = (typeof palettes)[number];
 
