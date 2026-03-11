@@ -245,13 +245,13 @@ fn palette(t: f32, palette_type: u32) -> vec3f {
   }
 }
 
-fn colorize(result: EscapeResult, max_iterations: u32, palette_type: u32) -> vec4f {
+fn colorize(result: EscapeResult, max_iterations: u32, palette_iterations: u32, palette_type: u32) -> vec4f {
   if (result.iteration >= max_iterations) {
     return vec4f(0.0, 0.0, 0.0, 1.0);
   }
 
   let smooth_iteration = f32(result.iteration) + 1.0 - log2(log2(max(result.magnitude_squared, 4.000001)));
-  let t = smooth_iteration / f32(max_iterations);
+  let t = smooth_iteration / f32(max(palette_iterations, 1u));
   let color = palette(clamp(t, 0.0, 1.0), palette_type);
 
   return vec4f(color, 1.0);
@@ -266,6 +266,7 @@ fn fs_main(@builtin(position) position: vec4f) -> @location(0) vec4f {
   let fractal_type = u32(uniforms.fractal_info.z);
   let max_iterations = u32(uniforms.fractal_info.w);
   let palette_type = u32(uniforms.style_info.x);
+  let palette_iterations = u32(uniforms.style_info.y);
 
   var uv = (position.xy / resolution) * 2.0 - vec2f(1.0, 1.0);
   uv.y = -uv.y;
@@ -273,5 +274,5 @@ fn fs_main(@builtin(position) position: vec4f) -> @location(0) vec4f {
   var c = center + vec2f(uv.x * aspect * scale, uv.y * scale);
 
   let result = sample_fractal(c, max_iterations, fractal_type);
-  return colorize(result, max_iterations, palette_type);
+  return colorize(result, max_iterations, palette_iterations, palette_type);
 }

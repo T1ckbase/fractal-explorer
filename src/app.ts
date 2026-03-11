@@ -28,6 +28,7 @@ export class FractalExplorerApp {
     getFractalDefinition(defaultFractalId),
   );
   private iterationCount = getFractalDefinition(defaultFractalId).defaultIterations;
+  private paletteIterationCount = this.iterationCount;
   private paletteId: PaletteId = defaultPaletteId;
   private readonly overlay: OverlayPanel;
   private readonly resizeObserver: ResizeObserver;
@@ -41,13 +42,16 @@ export class FractalExplorerApp {
     this.overlay = new OverlayPanel({
       fractalId: this.fractalId,
       iterationCount: this.iterationCount,
+      paletteIterationCount: this.paletteIterationCount,
       paletteId: this.paletteId,
       onFractalChange: (fractalId) => {
         this.fractalId = fractalId;
         const fractal = getFractalDefinition(fractalId);
         this.camera.reset(fractal);
         this.iterationCount = fractal.defaultIterations;
+        this.paletteIterationCount = fractal.defaultIterations;
         this.overlay.setIterationCount(this.iterationCount);
+        this.overlay.setPaletteIterationCount(this.paletteIterationCount);
         this.render();
       },
       onPaletteChange: (paletteId) => {
@@ -59,8 +63,16 @@ export class FractalExplorerApp {
         this.overlay.setIterationCount(this.iterationCount);
         this.render();
       },
+      onPaletteIterationChange: (iterationCount) => {
+        this.paletteIterationCount = clampIterationCount(iterationCount);
+        this.overlay.setPaletteIterationCount(this.paletteIterationCount);
+        this.render();
+      },
       onResetIterations: () => {
         this.resetIterations();
+      },
+      onResetPaletteIterations: () => {
+        this.resetPaletteIterations();
       },
     });
 
@@ -163,6 +175,7 @@ export class FractalExplorerApp {
       this.fractalId,
       camera,
       this.iterationCount,
+      this.paletteIterationCount,
       this.paletteId,
     );
     this.overlay.setDebugEntries(this.formatDiagnostics(diagnostics, camera));
@@ -191,6 +204,7 @@ export class FractalExplorerApp {
       },
       { label: 'scale', value: camera.scale.toExponential(6) },
       { label: 'iterations', value: String(this.iterationCount) },
+      { label: 'palette max', value: String(this.paletteIterationCount) },
       { label: 'format', value: diagnostics.presentationFormat },
       { label: 'adapter', value: diagnostics.adapterSummary },
       {
@@ -209,6 +223,12 @@ export class FractalExplorerApp {
   private resetIterations(): void {
     this.iterationCount = getFractalDefinition(this.fractalId).defaultIterations;
     this.overlay.setIterationCount(this.iterationCount);
+    this.render();
+  }
+
+  private resetPaletteIterations(): void {
+    this.paletteIterationCount = getFractalDefinition(this.fractalId).defaultIterations;
+    this.overlay.setPaletteIterationCount(this.paletteIterationCount);
     this.render();
   }
 

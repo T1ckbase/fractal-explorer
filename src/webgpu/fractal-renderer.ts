@@ -129,6 +129,7 @@ export class FractalRenderer {
     fractalId: FractalId,
     camera: CameraSnapshot,
     iterationCount: number,
+    paletteIterationCount: number,
     paletteId: PaletteId,
   ): RenderDiagnostics {
     const fractal = getFractalDefinition(fractalId);
@@ -143,7 +144,7 @@ export class FractalRenderer {
     this.uniformData[6] = fractal.shaderType;
     this.uniformData[7] = iterationCount;
     this.uniformData[8] = getPaletteIndex(paletteId);
-    this.uniformData[9] = 0;
+    this.uniformData[9] = paletteIterationCount;
     this.uniformData[10] = 0;
     this.uniformData[11] = 0;
 

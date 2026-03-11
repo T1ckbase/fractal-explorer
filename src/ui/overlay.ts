@@ -14,11 +14,14 @@ export interface DebugEntry {
 interface OverlayPanelOptions {
   readonly fractalId: FractalId;
   readonly iterationCount: number;
+  readonly paletteIterationCount: number;
   readonly paletteId: PaletteId;
   readonly onFractalChange: (fractalId: FractalId) => void;
   readonly onPaletteChange: (paletteId: PaletteId) => void;
   readonly onIterationChange: (iterationCount: number) => void;
+  readonly onPaletteIterationChange: (iterationCount: number) => void;
   readonly onResetIterations: () => void;
+  readonly onResetPaletteIterations: () => void;
 }
 
 export class OverlayPanel {
@@ -27,6 +30,7 @@ export class OverlayPanel {
   private readonly fractalSelect: HTMLSelectElement;
   private readonly paletteSelect: HTMLSelectElement;
   private readonly iterationInput: HTMLInputElement;
+  private readonly paletteIterationInput: HTMLInputElement;
   private readonly debugContainer: HTMLPreElement;
   private visible = true;
 
@@ -95,6 +99,25 @@ export class OverlayPanel {
       options.onResetIterations();
     });
 
+    this.paletteIterationInput = document.createElement('input');
+    this.paletteIterationInput.type = 'number';
+    this.paletteIterationInput.min = String(iterationRange.min);
+    this.paletteIterationInput.max = String(iterationRange.max);
+    this.paletteIterationInput.step = String(iterationRange.step);
+    this.paletteIterationInput.inputMode = 'numeric';
+    this.paletteIterationInput.ariaLabel = 'Palette max iterations';
+    this.paletteIterationInput.value = String(options.paletteIterationCount);
+    this.paletteIterationInput.addEventListener('change', () => {
+      options.onPaletteIterationChange(parseIterationCount(this.paletteIterationInput.valueAsNumber));
+    });
+
+    const resetPaletteIterationsButton = document.createElement('button');
+    resetPaletteIterationsButton.type = 'button';
+    resetPaletteIterationsButton.textContent = 'reset';
+    resetPaletteIterationsButton.addEventListener('click', () => {
+      options.onResetPaletteIterations();
+    });
+
     this.debugContainer = document.createElement('pre');
 
     this.element.append(
@@ -102,6 +125,7 @@ export class OverlayPanel {
         this.createControlRow('type', this.fractalSelect),
         this.createControlRow('palette', this.paletteSelect),
         this.createControlRow('iterations', this.iterationInput, resetIterationsButton),
+        this.createControlRow('palette max', this.paletteIterationInput, resetPaletteIterationsButton),
       ]),
       this.createSection('help', [
         this.createTextRow('.      toggle overlay'),
@@ -120,6 +144,10 @@ export class OverlayPanel {
 
   setIterationCount(iterationCount: number): void {
     this.iterationInput.value = String(iterationCount);
+  }
+
+  setPaletteIterationCount(iterationCount: number): void {
+    this.paletteIterationInput.value = String(iterationCount);
   }
 
   setDebugEntries(entries: readonly DebugEntry[]): void {
