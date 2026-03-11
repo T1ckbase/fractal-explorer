@@ -1,64 +1,51 @@
-export type FractalId = 'mandelbrot' | 'burning-ship-reflected';
-
 export const iterationRange = {
   min: 1,
   max: 8192,
   step: 1,
 } as const;
 
-const shaderFractalTypes = {
-  burningShip: 0,
-  mandelbrot: 1,
-} as const;
+export const defaultIterationCount = 512;
 
-type ShaderFractalType = (typeof shaderFractalTypes)[keyof typeof shaderFractalTypes];
-
-export interface FractalDefinition {
-  readonly id: FractalId;
-  readonly label: string;
-  readonly shaderType: ShaderFractalType;
-  readonly center: readonly [number, number];
-  readonly scale: number;
-  readonly defaultIterations: number;
-}
-
-const fractalDefinitions = [
+export const fractals = [
   {
     id: 'mandelbrot',
     label: 'Mandelbrot',
-    shaderType: shaderFractalTypes.mandelbrot,
-    center: [-0.5, 0],
+    center: [-0.5, 0] as const,
     scale: 1.5,
-    defaultIterations: 512,
   },
   {
     id: 'burning-ship-reflected',
-    label: 'Burning Ship (Reflected)',
-    shaderType: shaderFractalTypes.burningShip,
-    center: [-0.5, 0.5],
+    label: 'Burning Ship Reflected',
+    center: [-0.5, 0.5] as const,
     scale: 1.8,
-    defaultIterations: 512,
   },
-] as const satisfies readonly FractalDefinition[];
+] as const;
 
-const fractalDefinitionsById = new Map<FractalId, FractalDefinition>(
-  fractalDefinitions.map((definition) => [definition.id, definition]),
-);
+export type FractalDefinition = (typeof fractals)[number];
+export type FractalId = FractalDefinition['id'];
 
-export const fractals = [...fractalDefinitions];
-
-export const defaultFractalId: FractalId = 'mandelbrot';
+export const defaultFractalId: FractalId = fractals[0].id;
 
 export function getFractalDefinition(fractalId: FractalId): FractalDefinition {
-  const definition = fractalDefinitionsById.get(fractalId);
+  const fractal = fractals.find((entry) => entry.id === fractalId);
 
-  if (!definition) {
+  if (!fractal) {
     throw new Error(`Unknown fractal: ${fractalId}`);
   }
 
-  return definition;
+  return fractal;
+}
+
+export function getFractalIndex(fractalId: FractalId): number {
+  const fractalIndex = fractals.findIndex((entry) => entry.id === fractalId);
+
+  if (fractalIndex < 0) {
+    throw new Error(`Unknown fractal: ${fractalId}`);
+  }
+
+  return fractalIndex;
 }
 
 export function isFractalId(value: string): value is FractalId {
-  return fractalDefinitionsById.has(value as FractalId);
+  return fractals.some((fractal) => fractal.id === value);
 }

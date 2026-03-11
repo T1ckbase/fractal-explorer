@@ -1,5 +1,6 @@
 import { FractalCamera } from './camera.ts';
 import {
+  defaultIterationCount,
   defaultFractalId,
   getFractalDefinition,
   iterationRange,
@@ -27,7 +28,7 @@ export class FractalExplorerApp {
   private readonly camera = FractalCamera.fromFractal(
     getFractalDefinition(defaultFractalId),
   );
-  private iterationCount = getFractalDefinition(defaultFractalId).defaultIterations;
+  private iterationCount = defaultIterationCount;
   private paletteIterationCount = this.iterationCount;
   private paletteId: PaletteId = defaultPaletteId;
   private readonly overlay: OverlayPanel;
@@ -48,10 +49,6 @@ export class FractalExplorerApp {
         this.fractalId = fractalId;
         const fractal = getFractalDefinition(fractalId);
         this.camera.reset(fractal);
-        this.iterationCount = fractal.defaultIterations;
-        this.paletteIterationCount = fractal.defaultIterations;
-        this.overlay.setIterationCount(this.iterationCount);
-        this.overlay.setPaletteIterationCount(this.paletteIterationCount);
         this.render();
       },
       onPaletteChange: (paletteId) => {
@@ -221,13 +218,13 @@ export class FractalExplorerApp {
   }
 
   private resetIterations(): void {
-    this.iterationCount = getFractalDefinition(this.fractalId).defaultIterations;
+    this.iterationCount = defaultIterationCount;
     this.overlay.setIterationCount(this.iterationCount);
     this.render();
   }
 
   private resetPaletteIterations(): void {
-    this.paletteIterationCount = getFractalDefinition(this.fractalId).defaultIterations;
+    this.paletteIterationCount = defaultIterationCount;
     this.overlay.setPaletteIterationCount(this.paletteIterationCount);
     this.render();
   }

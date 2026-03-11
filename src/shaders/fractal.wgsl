@@ -77,6 +77,9 @@ fn iterate_burning_ship_reflected(c: vec2f, max_iterations: u32) -> EscapeResult
 fn sample_fractal(c: vec2f, max_iterations: u32, fractal_type: u32) -> EscapeResult {
   switch fractal_type {
     case 0u: {
+      return iterate_mandelbrot(c, max_iterations);
+    }
+    case 1u: {
       return iterate_burning_ship_reflected(c, max_iterations);
     }
     default: {

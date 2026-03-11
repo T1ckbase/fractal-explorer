@@ -1,6 +1,6 @@
 import type { CameraSnapshot } from '../camera.ts';
 import {
-  getFractalDefinition,
+  getFractalIndex,
   type FractalId,
 } from '../fractals.ts';
 import { getPaletteIndex, type PaletteId } from '../palettes.ts';
@@ -132,7 +132,7 @@ export class FractalRenderer {
     paletteIterationCount: number,
     paletteId: PaletteId,
   ): RenderDiagnostics {
-    const fractal = getFractalDefinition(fractalId);
+    const fractalIndex = getFractalIndex(fractalId);
     const aspect = this.canvas.width / this.canvas.height;
 
     this.uniformData[0] = this.canvas.width;
@@ -141,7 +141,7 @@ export class FractalRenderer {
     this.uniformData[3] = aspect;
     this.uniformData[4] = camera.center[0];
     this.uniformData[5] = camera.center[1];
-    this.uniformData[6] = fractal.shaderType;
+    this.uniformData[6] = fractalIndex;
     this.uniformData[7] = iterationCount;
     this.uniformData[8] = getPaletteIndex(paletteId);
     this.uniformData[9] = paletteIterationCount;
