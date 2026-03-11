@@ -38,7 +38,8 @@ fn iterate_mandelbrot(c: vec2f, max_iterations: u32) -> EscapeResult {
     z = vec2f(x, y);
     magnitude_squared = dot(z, z);
 
-    if (magnitude_squared > 4.0) {
+    // Use 8.0 for smoother gradients
+    if (magnitude_squared > 8.0) {
       break;
     }
 
@@ -64,7 +65,39 @@ fn iterate_burning_ship_reflected(c: vec2f, max_iterations: u32) -> EscapeResult
     z = vec2f(x, y);
     magnitude_squared = dot(z, z);
 
-    if (magnitude_squared > 4.0) {
+    // Use 8.0 for smoother gradients
+    if (magnitude_squared > 8.0) {
+      break;
+    }
+
+    iteration += 1u;
+  }
+
+  return EscapeResult(iteration, magnitude_squared);
+}
+
+// Created by T1ckbase, 2026.
+fn iterate_the_phallus(c: vec2f, max_iterations: u32) -> EscapeResult {
+  var z = vec2f(0.0, 0.0);
+  var iteration = 0u;
+  var magnitude_squared = 0.0;
+
+  loop {
+    if (iteration >= max_iterations) {
+      break;
+    }
+
+    let z_internal_x = abs(z.x) + c.y;
+    let z_internal_y = abs(z.y) - c.x;
+
+    let x = z_internal_x * z_internal_x - z_internal_y * z_internal_y + c.x;
+    let y = 2.0 * z_internal_x * z_internal_y + c.y;
+
+    z = vec2f(x, y);
+    magnitude_squared = dot(z, z);
+
+    // Use 64.0 to prevent shape clipping and premature bailout
+    if (magnitude_squared > 64.0) {
       break;
     }
 
@@ -81,6 +114,9 @@ fn sample_fractal(c: vec2f, max_iterations: u32, fractal_type: u32) -> EscapeRes
     }
     case 1u: {
       return iterate_burning_ship_reflected(c, max_iterations);
+    }
+    case 2u: {
+      return iterate_the_phallus(c, max_iterations);
     }
     default: {
       return iterate_mandelbrot(c, max_iterations);
