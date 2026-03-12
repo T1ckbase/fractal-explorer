@@ -13,7 +13,7 @@ WebGPU fractal explorer
 ## Requirements
 
 - [Bun](https://bun.com)
-- WebGPU-capable browser (Chrome 113+, Edge 113+, Safari & other browsers on iOS  26.0 -26.2)
+- WebGPU-capable browser (Chrome 113+, Edge 113+, Safari & other browsers on iOS 26.0-26.2)
 
 ## Development
 

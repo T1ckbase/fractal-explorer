@@ -1,9 +1,4 @@
-import {
-  fractals,
-  iterationRange,
-  isFractalId,
-  type FractalId,
-} from '../fractals.ts';
+import { fractals, iterationRange, isFractalId, type FractalId } from '../fractals.ts';
 import { isPaletteId, palettes, type PaletteId } from '../palettes.ts';
 
 export interface DebugEntry {

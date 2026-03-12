@@ -36,12 +36,7 @@ export class FractalCamera {
     };
   }
 
-  panByPixels(
-    deltaX: number,
-    deltaY: number,
-    viewportWidth: number,
-    viewportHeight: number,
-  ): void {
+  panByPixels(deltaX: number, deltaY: number, viewportWidth: number, viewportHeight: number): void {
     if (viewportWidth <= 0 || viewportHeight <= 0) {
       return;
     }

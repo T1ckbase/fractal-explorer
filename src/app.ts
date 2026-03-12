@@ -6,15 +6,9 @@ import {
   iterationRange,
   type FractalId,
 } from './fractals.ts';
-import {
-  defaultPaletteId,
-  type PaletteId,
-} from './palettes.ts';
+import { defaultPaletteId, type PaletteId } from './palettes.ts';
 import { OverlayPanel, type DebugEntry } from './ui/overlay.ts';
-import {
-  FractalRenderer,
-  type RenderDiagnostics,
-} from './webgpu/fractal-renderer.ts';
+import { FractalRenderer, type RenderDiagnostics } from './webgpu/fractal-renderer.ts';
 
 export class FractalExplorerApp {
   static async create(canvas: HTMLCanvasElement): Promise<FractalExplorerApp> {
@@ -25,9 +19,7 @@ export class FractalExplorerApp {
   }
 
   private fractalId: FractalId = defaultFractalId;
-  private readonly camera = FractalCamera.fromFractal(
-    getFractalDefinition(defaultFractalId),
-  );
+  private readonly camera = FractalCamera.fromFractal(getFractalDefinition(defaultFractalId));
   private iterationCount = defaultIterationCount;
   private paletteIterationCount = this.iterationCount;
   private paletteId: PaletteId = defaultPaletteId;
@@ -205,10 +197,7 @@ export class FractalExplorerApp {
       { label: 'adapter', value: diagnostics.adapterSummary },
       {
         label: 'render',
-        value:
-          diagnostics.lastRenderDurationMs === null
-            ? '--'
-            : `${diagnostics.lastRenderDurationMs.toFixed(2)} ms`,
+        value: diagnostics.lastRenderDurationMs === null ? '--' : `${diagnostics.lastRenderDurationMs.toFixed(2)} ms`,
       },
       { label: 'renders', value: String(diagnostics.renderCount) },
     ];
@@ -249,16 +238,11 @@ function normalizeWheelDelta(event: WheelEvent, viewportHeight: number): number 
 }
 
 function clampIterationCount(iterationCount: number): number {
-  return Math.min(
-    iterationRange.max,
-    Math.max(iterationRange.min, Math.round(iterationCount)),
-  );
+  return Math.min(iterationRange.max, Math.max(iterationRange.min, Math.round(iterationCount)));
 }
 
 function isEditingControl(target: EventTarget | null): boolean {
   return (
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLSelectElement ||
-    target instanceof HTMLTextAreaElement
+    target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement
   );
 }

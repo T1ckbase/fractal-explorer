@@ -89,11 +89,7 @@ export class FractalRenderer {
     });
 
     const adapterInfo = adapter.info;
-    const adapterSummary = [
-      adapterInfo.vendor,
-      adapterInfo.architecture,
-      adapterInfo.description,
-    ]
+    const adapterSummary = [adapterInfo.vendor, adapterInfo.architecture, adapterInfo.description]
       .filter((part) => part.length > 0)
       .join(' / ');
 
@@ -225,8 +221,7 @@ class TimestampQueryState {
   private lastSubmittedSlotIndex: number | null = null;
 
   private constructor(device: GPUDevice) {
-    const resultBufferSize =
-      TimestampQueryState.queryCount * TimestampQueryState.bytesPerTimestamp;
+    const resultBufferSize = TimestampQueryState.queryCount * TimestampQueryState.bytesPerTimestamp;
 
     this.querySet = device.createQuerySet({
       type: 'timestamp',
@@ -237,18 +232,15 @@ class TimestampQueryState {
       size: resultBufferSize,
       usage: GPUBufferUsage.QUERY_RESOLVE | GPUBufferUsage.COPY_SRC,
     });
-    this.readbackSlots = Array.from(
-      { length: TimestampQueryState.readbackSlotCount },
-      (_, index) => ({
-        buffer: device.createBuffer({
-          label: `Fractal timestamp readback buffer ${index + 1}`,
-          size: resultBufferSize,
-          usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-        }),
-        busy: false,
-        readPending: false,
+    this.readbackSlots = Array.from({ length: TimestampQueryState.readbackSlotCount }, (_, index) => ({
+      buffer: device.createBuffer({
+        label: `Fractal timestamp readback buffer ${index + 1}`,
+        size: resultBufferSize,
+        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
       }),
-    );
+      busy: false,
+      readPending: false,
+    }));
   }
 
   writePassTimestamps(passDescriptor: GPURenderPassDescriptor): void {
@@ -268,19 +260,12 @@ class TimestampQueryState {
 
     const bufferSize = this.resolveBuffer.size;
 
-    encoder.resolveQuerySet(
-      this.querySet,
-      0,
-      TimestampQueryState.queryCount,
-      this.resolveBuffer,
-      0,
-    );
+    encoder.resolveQuerySet(this.querySet, 0, TimestampQueryState.queryCount, this.resolveBuffer, 0);
     encoder.copyBufferToBuffer(this.resolveBuffer, 0, slot.buffer, 0, bufferSize);
 
     slot.busy = true;
     this.lastSubmittedSlotIndex = this.nextReadbackSlotIndex;
-    this.nextReadbackSlotIndex =
-      (this.nextReadbackSlotIndex + 1) % this.readbackSlots.length;
+    this.nextReadbackSlotIndex = (this.nextReadbackSlotIndex + 1) % this.readbackSlots.length;
   }
 
   readLatest(onResult: (elapsedMs: number) => void): void {
@@ -341,19 +326,10 @@ interface TimestampReadbackSlot {
   readPending: boolean;
 }
 
-function syncCanvasSize(
-  canvas: HTMLCanvasElement,
-  maxTextureDimension2D: number,
-): void {
+function syncCanvasSize(canvas: HTMLCanvasElement, maxTextureDimension2D: number): void {
   const devicePixelRatio = window.devicePixelRatio || 1;
-  const width = Math.min(
-    maxTextureDimension2D,
-    Math.max(1, Math.round(canvas.clientWidth * devicePixelRatio)),
-  );
-  const height = Math.min(
-    maxTextureDimension2D,
-    Math.max(1, Math.round(canvas.clientHeight * devicePixelRatio)),
-  );
+  const width = Math.min(maxTextureDimension2D, Math.max(1, Math.round(canvas.clientWidth * devicePixelRatio)));
+  const height = Math.min(maxTextureDimension2D, Math.max(1, Math.round(canvas.clientHeight * devicePixelRatio)));
 
   if (canvas.width === width && canvas.height === height) {
     return;
