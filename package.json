@@ -20,8 +20,5 @@
     "oxfmt": "^0.37.0",
     "oxlint": "^1.52.0",
     "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "@std/webgpu": "npm:@jsr/std__webgpu@^0.224.9"
   }
 }
