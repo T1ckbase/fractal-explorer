@@ -15,7 +15,7 @@ export const fractals = [
   },
   {
     id: 'burning-ship-reflected',
-    label: 'Burning Ship Reflected',
+    label: 'Burning Ship (reflected)',
     center: [-0.5, 0.5] as const,
     scale: 1.8,
   },
