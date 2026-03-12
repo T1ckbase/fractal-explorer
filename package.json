@@ -10,7 +10,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "dev": "bun ./index.html",
-    "build": "bun run clean && bun build --target=browser --sourcemap --outdir=dist ./index.html",
+    "build": "bun run clean && bun build --outdir=./dist --sourcemap --minify --metafile-md=./dist/meta.md ./index.html",
     "clean": "bun -e \"require('node:fs').rmSync('./dist', { recursive: true, force: true });\""
   },
   "devDependencies": {
