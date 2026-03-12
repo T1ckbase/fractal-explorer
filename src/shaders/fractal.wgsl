@@ -128,6 +128,10 @@ fn cosine_palette(t: f32, a: vec3f, b: vec3f, c: vec3f, d: vec3f) -> vec3f {
   return a + b * cos(6.2831853 * (c * t + d));
 }
 
+// Copyright 2019 Google LLC.
+// SPDX-License-Identifier: Apache-2.0
+// Polynomial approximation in WGSL for the Turbo colormap
+// Original GLSL by: Anton Mikhailov (mikhailov@google.com) & Ruofei Du (ruofei@google.com)
 fn palette_turbo(t: f32) -> vec3f {
   let kRedVec4   = vec4f(0.13572138, 4.61539260, -42.66032258, 132.13108234);
   let kGreenVec4 = vec4f(0.09140261, 2.19418839, 4.84296658, -14.18503333);
@@ -263,7 +267,7 @@ fn palette_cubehelix(t: f32) -> vec3f {
 }
 
 fn palette_test(t: f32) -> vec3f {
-  let tone = pow(t, 0.9);
+  let tone = pow(t, 0.5);
   return vec3f(tone);
 }
 
