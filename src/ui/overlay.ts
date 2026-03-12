@@ -123,10 +123,11 @@ export class OverlayPanel {
         this.createControlRow('palette max', this.paletteIterationInput, resetPaletteIterationsButton),
       ]),
       this.createSection('help', [
-        this.createTextRow('.      toggle overlay'),
-        this.createTextRow('r      reset view'),
-        this.createTextRow('drag   pan'),
-        this.createTextRow('wheel  zoom'),
+        this.createTextRow('.       toggle overlay'),
+        this.createTextRow('r       reset view'),
+        this.createTextRow('drag    pan'),
+        this.createTextRow('wheel   zoom'),
+        this.createLinkRow('source  ', 'GitHub', 'https://github.com/T1ckbase/fractal-explorer'),
       ]),
       this.createSection('debug', [this.debugContainer]),
     );
@@ -168,6 +169,20 @@ export class OverlayPanel {
     const row = document.createElement('p');
     row.className = 'overlay-row';
     row.textContent = `${indent()}${text}`;
+    return row;
+  }
+
+  private createLinkRow(label: string, text: string, href: string): HTMLElement {
+    const row = document.createElement('p');
+    row.className = 'overlay-row';
+
+    const link = document.createElement('a');
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noreferrer';
+    link.textContent = text;
+
+    row.append(`${indent()}${label}`, link);
     return row;
   }
 

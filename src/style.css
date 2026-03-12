@@ -37,3 +37,7 @@ canvas {
   display: block;
   white-space: pre;
 }
+
+.overlay-row a {
+  color: inherit;
+}
