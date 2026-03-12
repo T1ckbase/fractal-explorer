@@ -183,7 +183,7 @@ export class FractalExplorerApp {
         value: `${diagnostics.canvasWidth}x${diagnostics.canvasHeight}`,
       },
       {
-        label: 'device pixel ratio',
+        label: 'dpr',
         value: diagnostics.devicePixelRatio.toFixed(2),
       },
       {
