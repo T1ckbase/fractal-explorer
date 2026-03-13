@@ -107,6 +107,34 @@ fn iterate_the_phallus(c: vec2f, max_iterations: u32) -> EscapeResult {
   return EscapeResult(iteration, magnitude_squared);
 }
 
+fn iterate_test(c: vec2f, max_iterations: u32) -> EscapeResult {
+  var z = c;
+  var i = 0u;
+
+  loop {
+    if (i >= max_iterations) {
+      break;
+    }
+
+    let folded = abs(z);
+
+    let x = (folded.x * folded.x - folded.y * folded.y) + c.x;
+    let y = (sign(z.x) * sign(z.y) * 2.0 * folded.x * folded.y) + c.y;
+
+    z = vec2f(x, y);
+    z = floor(z * 10.0) / 10.0 + fract(z);
+
+    let box_dist = max(abs(z.x), abs(z.y));
+
+    if (box_dist > 4.0 || box_dist != box_dist) {
+      break;
+    }
+
+    i += 1u;
+  }
+  return EscapeResult(i, dot(z, z));
+}
+
 fn sample_fractal(c: vec2f, max_iterations: u32, fractal_type: u32) -> EscapeResult {
   switch fractal_type {
     case 0u: {
@@ -117,6 +145,9 @@ fn sample_fractal(c: vec2f, max_iterations: u32, fractal_type: u32) -> EscapeRes
     }
     case 2u: {
       return iterate_the_phallus(c, max_iterations);
+    }
+    case 3u: {
+      return iterate_test(c, max_iterations);
     }
     default: {
       return iterate_mandelbrot(c, max_iterations);

@@ -25,6 +25,12 @@ export const fractals = [
     center: [0.8, -0.8] as const,
     scale: 1.5,
   },
+  {
+    id: 'test',
+    label: 'Test',
+    center: [-0.5, 0] as const,
+    scale: 1.5,
+  },
 ] as const;
 
 export type FractalDefinition = (typeof fractals)[number];
