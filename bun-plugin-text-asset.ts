@@ -1,4 +1,4 @@
-import { type BunPlugin } from 'bun';
+import type { BunPlugin } from 'bun';
 
 /**
  * WORKAROUND: In Bun v1.3.10, .wgsl assets consistently fail to update via HMR,
@@ -9,11 +9,9 @@ import { type BunPlugin } from 'bun';
 export default {
   name: 'text-asset',
   setup(build) {
-    build.onLoad({ filter: /\.wgsl$/ }, async (args) => {
-      return {
-        loader: 'text',
-        contents: await Bun.file(args.path).text(),
-      };
-    });
+    build.onLoad({ filter: /\.wgsl$/ }, async (args) => ({
+      loader: 'text',
+      contents: await Bun.file(args.path).text(),
+    }));
   },
 } satisfies BunPlugin;
